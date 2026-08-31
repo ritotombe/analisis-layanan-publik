@@ -91,7 +91,10 @@ class LaporScraper(BaseScraper):
         days_back: int = 365,
         max_results: int = 50,
     ) -> list[Article]:
-        """Scrape laporan dari LAPOR!"""
+        """Scrape laporan dari LAPOR! secara paralel."""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        from config.settings import MAX_WORKERS
+
         articles = []
         seen_urls = set()
 
@@ -100,44 +103,47 @@ class LaporScraper(BaseScraper):
                 f"[{i}/{len(keywords)}] LAPOR! keyword: '{keyword}'"
             )
 
-            # Coba beberapa format URL pencarian
             search_urls = [
                 f"{self.BASE_URL}/laporan?q={quote_plus(keyword)}",
                 f"{self.BASE_URL}/search?keyword={quote_plus(keyword)}",
             ]
 
+            results = []
             for search_url in search_urls:
                 response = self._fetch(search_url)
                 if not response:
                     continue
 
-                results = self._parse_search_page(response.text)
-                if results:
+                parsed = self._parse_search_page(response.text)
+                if parsed:
+                    results = parsed
                     break
-            else:
-                self.logger.warning(f"  Tidak ada hasil untuk '{keyword}'")
+
+            if not results:
                 continue
 
-            count = 0
+            entries_to_fetch = []
             for result in results:
-                if count >= max_results:
+                if len(entries_to_fetch) >= max_results:
                     break
 
                 url = result.get("url", "")
                 if not url or url in seen_urls:
                     continue
                 seen_urls.add(url)
+                entries_to_fetch.append(result)
 
-                # Fetch detail laporan
-                detail_response = self._fetch(url)
+            def fetch_single_lapor(result):
+                url = result.get("url", "")
                 report_data = {}
-                if detail_response:
-                    report_data = self._parse_report_page(detail_response.text)
+                if url:
+                    detail_response = self._fetch(url)
+                    if detail_response:
+                        report_data = self._parse_report_page(detail_response.text)
 
-                body = report_data.get("body", result.get("snippet", ""))
-
-                article = Article(
-                    title=result.get("title", ""),
+                body = report_data.get("body") or result.get("snippet", "")
+                return Article(
+                    title=result.get("title", f"Laporan: {keyword}"),
                     body=body,
                     snippet=result.get("snippet", ""),
                     url=url,
@@ -154,11 +160,18 @@ class LaporScraper(BaseScraper):
                         "government_response": report_data.get("response", ""),
                     },
                 )
-                articles.append(article)
-                count += 1
 
-            self.logger.info(f"  → {count} laporan dari LAPOR!")
-            self._rate_limit()
+            with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+                futures = [executor.submit(fetch_single_lapor, r) for r in entries_to_fetch]
+                for f in as_completed(futures):
+                    try:
+                        art = f.result()
+                        if art:
+                            articles.append(art)
+                    except Exception as e:
+                        self.logger.warning(f"Error fetching lapor report: {e}")
+
+            self.logger.info(f"  → {len(entries_to_fetch)} laporan diproses untuk '{keyword}'")
 
         self.logger.info(f"Total: {len(articles)} laporan dari LAPOR!")
         return articles

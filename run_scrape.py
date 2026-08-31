@@ -49,7 +49,8 @@ def get_scraper(source: str):
         sys.exit(1)
 
 
-ALL_SOURCES = ["google_news", "playstore", "lapor", "kaskus", "youtube", "news_sites"]
+# Sumber data utama: Google News (mencakup semua media berita), Play Store, LAPOR, YouTube, Kaskus
+ALL_SOURCES = ["google_news", "playstore", "lapor", "youtube", "kaskus"]
 
 
 def save_articles(articles, conn):
