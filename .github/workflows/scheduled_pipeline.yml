@@ -1,0 +1,86 @@
+name: 📊 Public Service Scraping & Analysis Pipeline
+
+on:
+  schedule:
+    # Berjalan otomatis setiap hari pada pukul 00:00 UTC (07:00 WIB)
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      days:
+        description: 'Jangkauan hari ke belakang (misal: 7, 30, 365)'
+        required: false
+        default: '30'
+      source:
+        description: 'Sumber data (all, google_news, playstore, news_sites, lapor, kaskus)'
+        required: false
+        default: 'all'
+      category:
+        description: 'Kategori spesifik (kosongkan untuk semua kategori)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  run-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120 # Maksimal 2 jam
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 Setup Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 🚀 Jalankan Pipeline Analisis
+        env:
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          DAYS="${{ github.event.inputs.days || '7' }}"
+          SOURCE="${{ github.event.inputs.source || 'all' }}"
+          CATEGORY="${{ github.event.inputs.category || '' }}"
+
+          CMD="python run_pipeline.py --days $DAYS --source $SOURCE"
+          if [ -n "$CATEGORY" ]; then
+            CMD="$CMD --category $CATEGORY"
+          fi
+
+          echo "Menjalankan: $CMD"
+          $CMD
+
+      - name: 💾 Commit & Push Hasil Laporan ke Repository
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/ data/exports/
+          if git diff --staged --quiet; then
+            echo "Tidak ada perubahan laporan baru."
+          else
+            git commit -m "Auto-update laporan analisis publik [skip ci] - $(date +'%Y-%m-%d %H:%M')"
+            git push origin main || echo "Push skipped or branch protected"
+          fi
+
+      - name: 📤 Upload Artifacts (Laporan, Grafik, & Database SQLite)
+        uses: actions/upload-artifact@v4
+        with:
+          name: hasil-analisis-layanan-publik
+          path: |
+            output/
+            data/exports/
+            data/db.sqlite
+            logs/
+          retention-days: 60

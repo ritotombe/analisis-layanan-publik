@@ -1,0 +1,9 @@
+.env
+data/db.sqlite
+data/exports/
+output/
+__pycache__/
+*.pyc
+.DS_Store
+venv/
+.venv/

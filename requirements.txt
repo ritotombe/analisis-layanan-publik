@@ -1,0 +1,17 @@
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+feedparser>=6.0.0
+python-dotenv>=1.0.0
+pandas>=2.1.0
+Sastrawi>=1.0.1
+nltk>=3.8.0
+matplotlib>=3.8.0
+google-play-scraper>=1.2.0
+
+# Optional — uncomment when you have API keys
+# praw>=7.7.0              # Reddit
+# google-api-python-client>=2.100.0  # YouTube Data API
+# twscrape>=0.12.0         # Twitter/X (experimental)
+# transformers>=4.35.0     # IndoBERT sentiment (needs GPU)
+# torch>=2.1.0             # IndoBERT sentiment (needs GPU)
