@@ -39,7 +39,7 @@ class KompasParser(_SiteParser):
 
     def build_search_url(self, keyword: str, page: int = 1) -> str:
         encoded = quote_plus(keyword)
-        return f"{self.base_url}/search/{encoded}?page={page}&sort=date"
+        return f"{self.base_url}/search?q={encoded}&page={page}&sort=date"
 
     def parse_search_results(self, soup: BeautifulSoup) -> list[dict]:
         results = []
