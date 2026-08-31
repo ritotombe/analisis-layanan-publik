@@ -203,7 +203,10 @@ class NewsSiteScraper(BaseScraper):
         keywords: list[str],
         max_results: int,
     ) -> list[Article]:
-        """Scrape satu situs berita untuk semua keyword."""
+        """Scrape satu situs berita untuk semua keyword secara paralel."""
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        from config.settings import MAX_WORKERS
+
         articles = []
         seen_urls = set()
         consecutive_failures = 0
@@ -216,7 +219,6 @@ class NewsSiteScraper(BaseScraper):
                 break
 
             self.logger.info(f"  [{parser.name}] keyword: '{keyword}'")
-            count = 0
             page = 1
 
             url = parser.build_search_url(keyword, page)
@@ -232,8 +234,9 @@ class NewsSiteScraper(BaseScraper):
             if not results:
                 continue
 
+            entries_to_fetch = []
             for result in results:
-                if count >= max_results:
+                if len(entries_to_fetch) >= max_results:
                     break
 
                 article_url = result.get("url", "")
@@ -244,28 +247,40 @@ class NewsSiteScraper(BaseScraper):
                     article_url = parser.base_url + article_url
 
                 seen_urls.add(article_url)
+                result["url"] = article_url
+                entries_to_fetch.append(result)
 
-                art_response = self._fetch(article_url)
+            def fetch_single_news(res):
+                art_url = res.get("url", "")
                 body = None
-                if art_response:
-                    art_soup = BeautifulSoup(art_response.text, "lxml")
-                    body = parser.parse_article(art_soup)
+                if art_url:
+                    art_response = self._fetch(art_url)
+                    if art_response:
+                        art_soup = BeautifulSoup(art_response.text, "lxml")
+                        body = parser.parse_article(art_soup)
 
-                article = Article(
-                    title=result.get("title", ""),
-                    body=body,
-                    url=article_url,
+                return Article(
+                    title=res.get("title", ""),
+                    body=body or res.get("snippet", ""),
+                    url=art_url,
                     source_type="news_site",
                     source_name=parser.name,
                     source_category="news",
-                    published_date=result.get("date"),
+                    published_date=res.get("date"),
                     extra_data={"keyword": keyword},
                 )
-                articles.append(article)
-                count += 1
 
-            self._rate_limit()
-            self.logger.info(f"  [{parser.name}] → {count} artikel untuk '{keyword}'")
+            with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
+                futures = [executor.submit(fetch_single_news, r) for r in entries_to_fetch]
+                for f in as_completed(futures):
+                    try:
+                        art = f.result()
+                        if art:
+                            articles.append(art)
+                    except Exception as e:
+                        self.logger.warning(f"Error fetching news article: {e}")
+
+            self.logger.info(f"  [{parser.name}] → {len(entries_to_fetch)} artikel diproses untuk '{keyword}'")
 
         return articles
 
