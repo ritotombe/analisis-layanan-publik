@@ -40,19 +40,16 @@ def get_scraper(source: str):
     elif source == "lapor":
         from scrapers.lapor import LaporScraper
         return LaporScraper()
-    elif source == "satu_data":
-        from scrapers.satu_data import SatuDataScraper
-        return SatuDataScraper()
     elif source == "reddit":
         from scrapers.reddit import RedditScraper
         return RedditScraper()
     else:
         print(f"❌ Sumber tidak dikenal: {source}")
-        print(f"   Pilihan: google_news, playstore, lapor, satu_data, kaskus, youtube, news_sites, reddit")
+        print(f"   Pilihan: google_news, playstore, lapor, kaskus, youtube, news_sites, reddit")
         sys.exit(1)
 
 
-ALL_SOURCES = ["google_news", "playstore", "lapor", "satu_data", "kaskus", "youtube", "news_sites"]
+ALL_SOURCES = ["google_news", "playstore", "lapor", "kaskus", "youtube", "news_sites"]
 
 
 def save_articles(articles, conn):

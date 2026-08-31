@@ -1,0 +1,16 @@
+2026-08-31 09:43:49,977 | INFO | [1/2] Satu Data Indonesia keyword: 'data kependudukan'
+2026-08-31 09:43:51,595 | WARNING | HTTP ? untuk https://data.go.id/api/3/action/package_search (percobaan 1/2)
+2026-08-31 09:43:54,433 | WARNING | HTTP ? untuk https://data.go.id/api/3/action/package_search (percobaan 2/2)
+2026-08-31 09:43:56,685 | ERROR | Gagal fetch https://data.go.id/api/3/action/package_search setelah 2 percobaan
+2026-08-31 09:43:56,686 | INFO |   → 0 dataset ditemukan untuk 'data kependudukan'
+2026-08-31 09:43:56,686 | INFO | [2/2] Satu Data Indonesia keyword: 'BPJS'
+2026-08-31 09:43:57,437 | WARNING | HTTP ? untuk https://data.go.id/api/3/action/package_search (percobaan 1/2)
+2026-08-31 09:44:00,447 | WARNING | HTTP ? untuk https://data.go.id/api/3/action/package_search (percobaan 2/2)
+2026-08-31 09:44:02,699 | ERROR | Gagal fetch https://data.go.id/api/3/action/package_search setelah 2 percobaan
+2026-08-31 09:44:02,699 | INFO |   → 0 dataset ditemukan untuk 'BPJS'
+2026-08-31 09:44:02,699 | INFO | Total: 0 dataset dari Satu Data Indonesia
+2026-08-31 09:44:56,869 | INFO | [1/2] Satu Data Indonesia keyword: 'data kependudukan'
+2026-08-31 09:44:58,119 | INFO |   → 3 dataset ditemukan untuk 'data kependudukan'
+2026-08-31 09:44:58,119 | INFO | [2/2] Satu Data Indonesia keyword: 'BPJS'
+2026-08-31 09:44:59,381 | INFO |   → 3 dataset ditemukan untuk 'BPJS'
+2026-08-31 09:44:59,381 | INFO | Total: 6 dataset dari Satu Data Indonesia
