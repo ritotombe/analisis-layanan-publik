@@ -49,11 +49,11 @@ def get_scraper(source: str):
         sys.exit(1)
 
 
-ALL_SOURCES = ["google_news", "news_sites", "kaskus", "youtube", "playstore", "lapor"]
+ALL_SOURCES = ["google_news", "playstore", "lapor", "kaskus", "youtube", "news_sites"]
 
 
 def save_articles(articles, conn):
-    """Simpan artikel ke database."""
+    """Simpan artikel ke database secara cepat dengan SQLite INSERT OR IGNORE."""
     cursor = conn.cursor()
     new_count = 0
     dup_count = 0
@@ -62,7 +62,7 @@ def save_articles(articles, conn):
         data = article.to_dict()
         try:
             cursor.execute("""
-                INSERT INTO articles (
+                INSERT OR IGNORE INTO articles (
                     url, content_hash, title, body, snippet,
                     source_type, source_name, source_category,
                     author, published_date, rating, extra_data
@@ -81,9 +81,11 @@ def save_articles(articles, conn):
                 data.get("rating"),
                 data.get("extra_data"),
             ))
-            new_count += 1
+            if cursor.rowcount > 0:
+                new_count += 1
+            else:
+                dup_count += 1
         except Exception:
-            # Kemungkinan duplikat (URL unique constraint)
             dup_count += 1
 
     conn.commit()
@@ -159,12 +161,7 @@ def main():
                 max_results=args.max_results,
             )
 
-            # Dedup
-            from processing.dedup import Deduplicator
-            dedup = Deduplicator()
-            articles = dedup.deduplicate(articles)
-
-            # Simpan
+            # Simpan langsung ke database (dedup ditangani instan oleh SQLite)
             new, dup = save_articles(articles, conn)
             total_new += new
             total_dup += dup
