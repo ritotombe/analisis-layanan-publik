@@ -15,6 +15,7 @@ from pathlib import Path
 
 from config.settings import OUTPUT_DIR, EXPORTS_DIR
 from config.keywords import CATEGORIES
+from config.classifiers import PAIN_POINT_PATTERNS, DEMOGRAPHIC_GROUPS
 
 
 class ReportGenerator:
@@ -129,7 +130,12 @@ class ReportGenerator:
             cat_pain_points = defaultdict(int)
             for r in cat_results:
                 for pp in r.get("pain_points_detail", []):
-                    cat_pain_points[pp.get("name", "")] += 1
+                    if isinstance(pp, dict):
+                        pp_name = pp.get("name") or pp.get("type", "")
+                    else:
+                        pp_name = PAIN_POINT_PATTERNS.get(str(pp), {}).get("name", str(pp))
+                    if pp_name:
+                        cat_pain_points[pp_name] += 1
 
             if cat_pain_points:
                 lines.append("| Pain Point | Jumlah Mentions |")
@@ -425,11 +431,28 @@ class ReportGenerator:
                 # Flatten beberapa field
                 row = dict(result)
                 if isinstance(row.get("pain_points"), list):
-                    row["pain_points"] = "; ".join(
-                        pp.get("name", "") for pp in row["pain_points"]
-                    )
+                    names = [
+                        pp.get("name", pp.get("type", "")) if isinstance(pp, dict)
+                        else PAIN_POINT_PATTERNS.get(str(pp), {}).get("name", str(pp))
+                        for pp in row["pain_points"]
+                    ]
+                    row["pain_points"] = "; ".join(filter(None, names))
+                elif isinstance(row.get("pain_points"), str) and row["pain_points"].startswith("["):
+                    try:
+                        parsed = json.loads(row["pain_points"])
+                        names = [PAIN_POINT_PATTERNS.get(str(p), {}).get("name", str(p)) for p in parsed]
+                        row["pain_points"] = "; ".join(filter(None, names))
+                    except Exception:
+                        pass
+
                 if isinstance(row.get("demographics"), list):
-                    row["demographics"] = "; ".join(row["demographics"])
+                    row["demographics"] = "; ".join(str(d) for d in row["demographics"])
+                elif isinstance(row.get("demographics"), str) and row["demographics"].startswith("["):
+                    try:
+                        parsed = json.loads(row["demographics"])
+                        row["demographics"] = "; ".join(str(d) for d in parsed)
+                    except Exception:
+                        pass
                 writer.writerow(row)
 
         print(f"✅ CSV diekspor: {filepath}")
