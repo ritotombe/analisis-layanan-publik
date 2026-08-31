@@ -232,6 +232,7 @@ class NewsSiteScraper(BaseScraper):
             results = parser.parse_search_results(soup)
 
             if not results:
+                self.logger.info(f"  [{parser.name}] → 0 artikel ditemukan untuk '{keyword}'")
                 continue
 
             entries_to_fetch = []
