@@ -206,61 +206,65 @@ class NewsSiteScraper(BaseScraper):
         """Scrape satu situs berita untuk semua keyword."""
         articles = []
         seen_urls = set()
+        consecutive_failures = 0
 
         for keyword in keywords:
+            if consecutive_failures >= 3:
+                self.logger.warning(
+                    f"[{parser.name}] Terblokir atau tidak dapat diakses (3x gagal berturut-turut). Melewati situs ini."
+                )
+                break
+
             self.logger.info(f"  [{parser.name}] keyword: '{keyword}'")
             count = 0
             page = 1
 
-            while count < max_results and page <= 3:  # max 3 halaman per keyword
-                url = parser.build_search_url(keyword, page)
-                response = self._fetch(url)
-                if not response:
+            url = parser.build_search_url(keyword, page)
+            response = self._fetch(url)
+            if not response:
+                consecutive_failures += 1
+                continue
+            
+            consecutive_failures = 0
+            soup = BeautifulSoup(response.text, "lxml")
+            results = parser.parse_search_results(soup)
+
+            if not results:
+                continue
+
+            for result in results:
+                if count >= max_results:
                     break
 
-                soup = BeautifulSoup(response.text, "lxml")
-                results = parser.parse_search_results(soup)
+                article_url = result.get("url", "")
+                if not article_url or article_url in seen_urls:
+                    continue
 
-                if not results:
-                    break
+                if article_url.startswith("/"):
+                    article_url = parser.base_url + article_url
 
-                for result in results:
-                    if count >= max_results:
-                        break
+                seen_urls.add(article_url)
 
-                    article_url = result.get("url", "")
-                    if not article_url or article_url in seen_urls:
-                        continue
+                art_response = self._fetch(article_url)
+                body = None
+                if art_response:
+                    art_soup = BeautifulSoup(art_response.text, "lxml")
+                    body = parser.parse_article(art_soup)
 
-                    # Pastikan URL lengkap
-                    if article_url.startswith("/"):
-                        article_url = parser.base_url + article_url
+                article = Article(
+                    title=result.get("title", ""),
+                    body=body,
+                    url=article_url,
+                    source_type="news_site",
+                    source_name=parser.name,
+                    source_category="news",
+                    published_date=result.get("date"),
+                    extra_data={"keyword": keyword},
+                )
+                articles.append(article)
+                count += 1
 
-                    seen_urls.add(article_url)
-
-                    # Fetch & parse artikel
-                    art_response = self._fetch(article_url)
-                    body = None
-                    if art_response:
-                        art_soup = BeautifulSoup(art_response.text, "lxml")
-                        body = parser.parse_article(art_soup)
-
-                    article = Article(
-                        title=result.get("title", ""),
-                        body=body,
-                        url=article_url,
-                        source_type="news_site",
-                        source_name=parser.name,
-                        source_category="news",
-                        published_date=result.get("date"),
-                        extra_data={"keyword": keyword},
-                    )
-                    articles.append(article)
-                    count += 1
-
-                page += 1
-                self._rate_limit()
-
+            self._rate_limit()
             self.logger.info(f"  [{parser.name}] → {count} artikel untuk '{keyword}'")
 
         return articles
