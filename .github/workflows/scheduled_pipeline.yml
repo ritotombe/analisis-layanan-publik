@@ -46,6 +46,7 @@ jobs:
 
       - name: 🚀 Jalankan Pipeline Analisis
         env:
+          PYTHONUNBUFFERED: "1"
           REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
           REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
@@ -54,7 +55,7 @@ jobs:
           SOURCE="${{ github.event.inputs.source || 'all' }}"
           CATEGORY="${{ github.event.inputs.category || '' }}"
 
-          CMD="python run_pipeline.py --days $DAYS --source $SOURCE"
+          CMD="python -u run_pipeline.py --days $DAYS --source $SOURCE"
           if [ -n "$CATEGORY" ]; then
             CMD="$CMD --category $CATEGORY"
           fi
