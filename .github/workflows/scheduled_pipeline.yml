@@ -55,13 +55,11 @@ jobs:
           SOURCE="${{ github.event.inputs.source || 'all' }}"
           CATEGORY="${{ github.event.inputs.category || '' }}"
 
-          CMD="python -u run_pipeline.py --days $DAYS --source $SOURCE"
           if [ -n "$CATEGORY" ]; then
-            CMD="$CMD --category $CATEGORY"
+            python -u run_pipeline.py --days "$DAYS" --source "$SOURCE" --category "$CATEGORY"
+          else
+            python -u run_pipeline.py --days "$DAYS" --source "$SOURCE"
           fi
-
-          echo "Menjalankan: $CMD"
-          $CMD
 
       - name: 💾 Commit & Push Hasil Laporan ke Repository
         run: |

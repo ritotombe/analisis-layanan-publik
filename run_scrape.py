@@ -127,8 +127,11 @@ def main():
         keywords = get_all_keywords()
         print(f"📂 Semua kategori ({len(keywords)} keywords)")
 
-    # Tentukan sumber
-    sources = ALL_SOURCES if args.source == "all" else [args.source]
+    # Tentukan sumber (mendukung koma, misal: 'news_sites, youtube')
+    if args.source == "all":
+        sources = ALL_SOURCES
+    else:
+        sources = [s.strip() for s in args.source.split(",") if s.strip()]
 
     print(f"🔍 Sumber: {', '.join(sources)}")
     print(f"📅 Periode: {args.days} hari terakhir")
