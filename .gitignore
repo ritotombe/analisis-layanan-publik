@@ -1,7 +1,8 @@
 .env
 data/db.sqlite
-data/exports/
-output/
+data/db.sqlite-wal
+data/db.sqlite-shm
+logs/
 __pycache__/
 *.pyc
 .DS_Store
