@@ -51,16 +51,16 @@ TWITTER_EMAIL = os.getenv("TWITTER_EMAIL", "")
 # ── Laporan ───────────────────────────────────────────────────────────
 REPORT_LANGUAGE = "id"  # Bahasa Indonesia
 
-# ── Play Store App IDs (aplikasi pemerintah) ──────────────────────────
+# ── Play Store App IDs (aplikasi publik pemerintah) ───────────────────
 PLAYSTORE_APP_IDS = {
-    "bpjs_kesehatan": "app.bpjs.mobile",
-    "jkn_mobile": "app.bpjs.mobile",
-    "bpjs_ketenagakerjaan": "id.go.bpjsketenagakerjaan.jmo",
-    "signal_sim": "id.go.polri.signal",
-    "pajak_djp": "id.go.pajak.mpajak",
-    "lapor": "id.go.lapor",
-    "inacbg_bpjs": "id.co.iconplus.inacbg",
-    "satu_sehat": "id.kemkes.satusehat.mobile",
+    "Mobile JKN (BPJS Kesehatan)": "app.bpjs.mobile",
+    "JMO (BPJS Ketenagakerjaan)": "id.go.bpjsketenagakerjaan.jmo",
+    "SIGNAL (Samsat Digital Nasional)": "id.go.polri.signal",
+    "M-Pajak (DJP Kemenkeu)": "id.go.pajak.mpajak",
+    "SatuSehat Mobile (Kemenkes)": "id.kemkes.satusehat.mobile",
+    "IKD (Identitas Kependudukan Digital)": "gov.dukcapil.mobile_id",
+    "PLN Mobile (Layanan Listrik)": "com.icon.pln123",
+    "Taspen Mobile (Pensiun/ASN)": "com.taspen.taspenmobile",
 }
 
 # ── Logging ───────────────────────────────────────────────────────────
