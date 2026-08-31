@@ -43,6 +43,7 @@ REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET", "")
 REDDIT_USER_AGENT = os.getenv("REDDIT_USER_AGENT", "antah-scraper:v1.0")
 
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 TWITTER_USERNAME = os.getenv("TWITTER_USERNAME", "")
 TWITTER_PASSWORD = os.getenv("TWITTER_PASSWORD", "")
@@ -51,16 +52,16 @@ TWITTER_EMAIL = os.getenv("TWITTER_EMAIL", "")
 # ── Laporan ───────────────────────────────────────────────────────────
 REPORT_LANGUAGE = "id"  # Bahasa Indonesia
 
-# ── Play Store App IDs (aplikasi publik pemerintah) ───────────────────
+# ── Play Store App IDs (aplikasi pemerintah) ──────────────────────────
 PLAYSTORE_APP_IDS = {
-    "Mobile JKN (BPJS Kesehatan)": "app.bpjs.mobile",
-    "JMO (BPJS Ketenagakerjaan)": "id.go.bpjsketenagakerjaan.jmo",
-    "SIGNAL (Samsat Digital Nasional)": "id.go.polri.signal",
-    "M-Pajak (DJP Kemenkeu)": "id.go.pajak.mpajak",
-    "SatuSehat Mobile (Kemenkes)": "id.kemkes.satusehat.mobile",
-    "IKD (Identitas Kependudukan Digital)": "gov.dukcapil.mobile_id",
-    "PLN Mobile (Layanan Listrik)": "com.icon.pln123",
-    "Taspen Mobile (Pensiun/ASN)": "com.taspen.taspenmobile",
+    "bpjs_kesehatan": "app.bpjs.mobile",
+    "jkn_mobile": "app.bpjs.mobile",
+    "bpjs_ketenagakerjaan": "id.go.bpjsketenagakerjaan.jmo",
+    "signal_sim": "id.go.polri.signal",
+    "pajak_djp": "id.go.pajak.mpajak",
+    "lapor": "id.go.lapor",
+    "inacbg_bpjs": "id.co.iconplus.inacbg",
+    "satu_sehat": "id.kemkes.satusehat.mobile",
 }
 
 # ── Logging ───────────────────────────────────────────────────────────

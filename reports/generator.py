@@ -262,32 +262,27 @@ class ReportGenerator:
         lines.append("| Ranking | Kelompok | Jumlah Mentions |")
         lines.append("|---------|----------|-----------------|")
         for i, (key, data) in enumerate(ranking, 1):
-            demo_info = DEMOGRAPHIC_GROUPS.get(key, {})
-            name = demo_info.get("name", key.replace("_", " ").title())
-            icon = demo_info.get("icon", "👥")
-            lines.append(f"| {i} | {icon} {name} | {data['count']} |")
+            lines.append(f"| {i} | {data['icon']} {data['name']} | {data['count']} |")
 
         # Matriks kelompok × kategori
         lines.append("\n**Matriks Kelompok × Kategori:**\n")
 
+        # Header
         cat_names = [CATEGORIES[k]["name"] for k in CATEGORIES if k in CATEGORIES]
         header = "| Kelompok | " + " | ".join(cat_names) + " |"
         sep = "|----------|" + "|".join(["----" for _ in cat_names]) + "|"
         lines.append(header)
         lines.append(sep)
 
+        # Data per kelompok
         for key, data in ranking:
-            demo_info = DEMOGRAPHIC_GROUPS.get(key, {})
-            name = demo_info.get("name", key.replace("_", " ").title())
-            icon = demo_info.get("icon", "👥")
-
             cat_counts = defaultdict(int)
             for r in analysis_results:
                 if key in r.get("demographics_detail", []):
                     cat_counts[r.get("category", "")] += 1
 
             row_values = [str(cat_counts.get(k, 0)) for k in CATEGORIES]
-            lines.append(f"| {icon} {name} | " + " | ".join(row_values) + " |")
+            lines.append(f"| {data['icon']} {data['name']} | " + " | ".join(row_values) + " |")
 
         return "\n".join(lines)
 
@@ -375,11 +370,8 @@ class ReportGenerator:
         top_pps = pp_summary.get("top_pain_points", [])
         if top_pps:
             pp_key, pp_data = top_pps[0]
-            pp_info = PAIN_POINT_PATTERNS.get(pp_key, {})
-            name = pp_info.get("name", pp_data.get("name", pp_key))
-            icon = pp_info.get("icon", pp_data.get("icon", "⚠️"))
             lines.append(
-                f"1. **Pain point utama:** {icon} {name} "
+                f"1. **Pain point utama:** {pp_data['icon']} {pp_data['name']} "
                 f"({pp_data['count']} konten)"
             )
 
@@ -387,11 +379,8 @@ class ReportGenerator:
         ranking = demo_summary.get("ranking", [])
         if ranking:
             key, data = ranking[0]
-            demo_info = DEMOGRAPHIC_GROUPS.get(key, {})
-            name = demo_info.get("name", key.replace("_", " ").title())
-            icon = demo_info.get("icon", "👥")
             lines.append(
-                f"2. **Kelompok paling terdampak:** {icon} {name} "
+                f"2. **Kelompok paling terdampak:** {data['icon']} {data['name']} "
                 f"({data['count']} konten)"
             )
 

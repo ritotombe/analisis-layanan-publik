@@ -8,6 +8,7 @@ Sastrawi>=1.0.1
 nltk>=3.8.0
 matplotlib>=3.8.0
 google-play-scraper>=1.2.0
+google-generativeai>=0.4.0
 
 # Optional — uncomment when you have API keys
 # praw>=7.7.0              # Reddit

@@ -18,6 +18,7 @@ from analysis.sentiment import SentimentAnalyzer
 from analysis.pain_point_extractor import PainPointExtractor
 from analysis.demographic_detector import DemographicDetector
 from analysis.trend import TrendAnalyzer
+from analysis.llm_enhancer import LLMEnhancer
 from reports.generator import ReportGenerator
 from config.keywords import CATEGORIES
 
@@ -129,6 +130,10 @@ def main():
         "--charts", action="store_true", default=True,
         help="Generate charts (default: ya)"
     )
+    parser.add_argument(
+        "--use-ai", action="store_true", default=False,
+        help="Gunakan AI (Gemini) untuk menyempurnakan analisis data yang sulit"
+    )
     args = parser.parse_args()
 
     conn = get_connection()
@@ -141,6 +146,7 @@ def main():
     demographic_detector = DemographicDetector()
     trend_analyzer = TrendAnalyzer()
     report_gen = ReportGenerator()
+    llm = LLMEnhancer() if args.use_ai else None
 
     # Ambil artikel belum dianalisis
     articles = fetch_articles(conn, args.category)
@@ -208,6 +214,15 @@ def main():
                 "bottleneck_patterns_detail": pp_result["bottleneck"]["patterns"],
                 "demographics_detail": demo_result["group_keys"],
             }
+
+            # LLM Enhancement (jika aktif dan kategori tidak terdeteksi)
+            if args.use_ai and llm and llm.enabled:
+                if analysis.get("category") == "tidak_teridentifikasi" or not analysis.get("pain_points_detail"):
+                    print(f"    🤖 Menggunakan AI untuk artikel: {article.get('title')[:30]}...")
+                    ai_result = llm.analyze_text(article.get("title", ""), full_text)
+                    if ai_result:
+                        # Timpa hasil rule-based dengan hasil AI
+                        analysis.update(ai_result)
 
             # Simpan ke database
             save_analysis(conn, article["id"], analysis)
